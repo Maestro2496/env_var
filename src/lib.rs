@@ -12,11 +12,11 @@ pub struct EnvHolder {
 }
 
 impl EnvHolder {
-    pub fn new () -> Self {
+    pub fn new (debug : bool) -> Self {
 
         let mut env_holder =  Self {
             variables : HashMap::new(),
-            debug: false
+            debug
         };
 
         
@@ -26,10 +26,12 @@ impl EnvHolder {
             Some(".env") => env_holder.set_var_from_env_file(),
             Some(".env.json") => env_holder.set_var_from_json(),
             _ =>  {
-               if let Err(err) = fs::write(".env", "path = '.env'") {
-                eprintln!("Error creating '.env' file {}", err);
-                
-               }
+             let _ =  fs::write(".env", "path = '.env'").map_err(|err| {
+                if debug {
+                    eprintln!("Error creating '.env' file: {:?}", err);
+                }
+                err
+             });
             },
         }
        return env_holder;

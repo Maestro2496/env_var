@@ -39,7 +39,7 @@ fn test_set_var_from_env_file() {
 
 #[test]
 fn test_set_var_from_json_file() {
-    let env_holder = EnvHolder::new();
+    let env_holder = EnvHolder::new(true);
     let url = env_holder.get_var("path");
     if let Some(url_value) = url {
         assert_eq!(url_value, ".env");
