@@ -20,7 +20,11 @@ impl EnvHolder {
         match file {
             Some(".env") => env_holder.set_var_from_env_file(),
             Some(".env.json") => env_holder.set_var_from_json(),
-            _ => {}
+            _ =>  {
+               if let Err(err) = fs::write(".env", "path = '.env'") {
+                eprintln!("Error creating '.env' file {}", err);
+               }
+            },
         }
        return env_holder;
 
@@ -118,7 +122,10 @@ impl EnvHolder {
 
         None
         
-}
+    }
+
+    
+
 }
 
 
