@@ -24,7 +24,8 @@ fn test_check_available_file() {
 
 #[test]
 fn test_set_var_from_env_file() {
-    let env_holder = EnvHolder::new();
+    let env_holder = EnvHolder::new(true);
+    
 
     let url = env_holder.get_var("path");
     

@@ -7,14 +7,19 @@ use serde_json::{Value, Error};
 
 
 pub struct EnvHolder {
-    variables : HashMap<String, String>
+    variables : HashMap<String, String>,
+    debug : bool,
 }
 
 impl EnvHolder {
     pub fn new () -> Self {
+
         let mut env_holder =  Self {
             variables : HashMap::new(),
+            debug: false
         };
+
+        
         let file = EnvHolder::check_available_file();
 
         match file {
@@ -23,11 +28,17 @@ impl EnvHolder {
             _ =>  {
                if let Err(err) = fs::write(".env", "path = '.env'") {
                 eprintln!("Error creating '.env' file {}", err);
+                
                }
             },
         }
        return env_holder;
 
+    }
+
+    pub fn with_debug(&mut self) -> &mut Self {
+      self.debug = true;
+      self
     }
 
     pub fn get_var(&self, env_name: &str) -> Option<&str> {
@@ -67,7 +78,10 @@ impl EnvHolder {
 
             },
             Err(err) => {
-                println!("Error while reading the file. {}", err)
+                if self.debug {
+                    println!("Error while reading the file. {}", err)
+                }
+               
             }
         }
     }
@@ -87,14 +101,17 @@ impl EnvHolder {
                             
                             let key = key.trim_matches('\"').to_string();
                             let value = value.trim_matches('\"').to_string();
-                            println!("{key} {value}");
+                            
                             self.variables.insert(key, value);
                     }
                     }
                 }
             },
             Err(err) => {
-                println!("Error while reading {}", err);
+                if self.debug {
+                    println!("Error while reading {}", err);
+                }
+               
             }
         }
     }
