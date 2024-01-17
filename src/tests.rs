@@ -23,11 +23,22 @@ fn test_set_var_from_env_file() {
     let env_holder = EnvHolder::new();
 
     let url = env_holder.get_var("job");
-    println!("{:?}", url);
+    
     if let Some(url_value) = url {
-        assert_eq!(url_value, "ppppp");
+        assert_eq!(url_value, "eddyagossou.me");
     }else {
         assert_eq!(url, None);
     }
     
+}
+
+#[test]
+fn test_set_var_from_json_file() {
+    let env_holder = EnvHolder::new();
+    let url = env_holder.get_var("url");
+    if let Some(url_value) = url {
+        assert_eq!(url_value, "eddyagossou.me");
+    }else {
+       assert_eq!(url, None);
+    }
 }
