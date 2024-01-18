@@ -1,6 +1,6 @@
 mod tests;
-
 use std::fs;
+use std::env;
 use std::collections::HashMap;
 use std::ops::Deref;
 use serde_json::{Value, Error};
@@ -16,10 +16,9 @@ impl EnvHolder {
 
         let mut env_holder =  Self {
             variables : HashMap::new(),
-            debug
+            debug,
         };
 
-        
         let file = EnvHolder::check_available_file();
 
         match file {
@@ -28,13 +27,17 @@ impl EnvHolder {
             _ =>  {
              let _ =  fs::write(".env", "path = '.env'").map_err(|err| {
                 if debug {
-                    eprintln!("Error creating '.env' file: {:?}", err);
+                    println!("Error creating '.env' file: {:?}", err);
                 }
                 err
              });
             },
         }
-       return env_holder;
+        // Variables from the command line take precedence
+        env_holder.read_var_from_cmd_line();
+
+
+        return env_holder;
 
     }
 
@@ -143,6 +146,31 @@ impl EnvHolder {
         
     }
 
+    // fn is_valid_file_name (file_name: &str) -> bool {
+    //     let path = Path::new(file_name);
+
+    //     if let Some(file_extension) = path.extension().and_then(|ext| ext.to_str()){
+
+    //         return [".env", ".txt", ".json"].contains(&file_extension);
+    //     }
+    //     false   
+    // }
+    pub fn read_var_from_cmd_line (&mut self) {
+        let mut contents = String::from("");
+        for arg in env::args(){
+            println!("arg{}", arg);
+            contents.push_str(&(arg + "\n"));
+
+        }
+        print!("{}", contents);
+
+        for line in contents.lines(){
+            let trimmed_line = line.trim();
+            if let Some((key, value)) = trimmed_line.split_once("="){
+                self.variables.insert(key.to_string(), value.to_string());
+            }
+        }
+    }
     
 
 }

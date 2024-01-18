@@ -2,6 +2,7 @@
 
 use super::*;
 
+
 #[test]
 fn test_check_available_file() {
     
@@ -47,3 +48,21 @@ fn test_set_var_from_json_file() {
        assert_eq!(url, None);
     }
 }
+
+
+// #[test]
+// fn test_read_from_cmd_line (){
+//     // Must run cargo test with some env variables
+    
+//     let env_holder = EnvHolder::new(true);
+   
+
+//     if let Some(url) = env_holder.get_var("url") {
+//         print!("{}", url);
+//         assert_eq!(url, "test")
+//     }else{
+//        panic!("")
+//     }
+    
+    
+// }
