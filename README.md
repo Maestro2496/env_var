@@ -41,3 +41,7 @@ if let Some(url_value) = url {
     // Further processing
  }
 ```
+
+## Contributing
+
+Contributions are welcome! If you find a bug, have a feature request, or would like to contribute to the project, please feel free to open an issue or submit a pull request. Your feedback and contributions help make this library better for everyone.
