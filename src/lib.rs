@@ -148,12 +148,12 @@ impl EnvHolder {
                     if let Some((key, value)) =  line.trim().split_once("="){
                             
                             let key = key.trim_matches('\"').trim().to_string();
-                            println!("{}", value);
+                           
                             let value = value
                                 .replace("\"", "")
                                 .replace("'", "")
                                 .trim().to_string();
-                            println!("{}", value);
+                            
                             self.variables.insert(key, value);
                     }
                     }
