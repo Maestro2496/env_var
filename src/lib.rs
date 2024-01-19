@@ -1,3 +1,31 @@
+//! A library to retrieve environment variables from different file types.
+//! 
+//! # Supported file types
+    //! - Simple txt files (.txt, .env)
+    //! - JSON files (.json)
+//! 
+//! ## Examples with debug
+//! ```
+//! use env_var::EnvHolder;
+//!  // With debug flag set to true
+//! let env_holder = EnvHolder::new(true);
+//! let url = env_holder.get_var("url");
+//! if let Some(url_value) = url { 
+//!     // Further processing  
+//!  }
+//! ````
+//! # Examples without debug with and a custom file_name
+//! ```
+//! use env_var::EnvHolder;
+//!  // With debug flag set to true
+//! let env_holder = EnvHolder::new(false).with_file_name("custom_file.env");
+//! let url = env_holder.get_var("url");
+//! if let Some(url_value) = url {   
+//!     // Further processing
+//!  }
+
+
+
 mod tests;
 use std::fs;
 use std::env;
@@ -6,14 +34,20 @@ use std::ops::Deref;
 use serde_json::{Value, Error};
 use regex::Regex;
 
+ 
+
 #[derive(Debug)]
 pub struct EnvHolder {
+    /// variables: HashMap to store the env variables
     variables : HashMap<String, String>,
+    /// debug: flag to read error messages in the cmd line
     debug : bool,
+    /// file_name: Optional, use to set a custom file name. Supported file are .txt, .env and .json
     file_name: String,
 }
 
 impl EnvHolder {
+    /// Initialise a new EnvHolder instance by reading the appropriate file
     pub fn new (debug : bool) -> Self {
 
         let mut env_holder =  Self {
@@ -51,12 +85,13 @@ impl EnvHolder {
 
     }
 
+    /// Set the debug flag to true
     pub fn with_debug(&mut self) -> &mut Self {
       self.debug = true;
       self
     }
 
-
+    /// Allow reading .env variables from a custom file
     pub fn with_file_name(mut self, file_name: &str) -> Self{
             
             if file_name.ends_with("txt") | file_name.ends_with(".env") {
@@ -75,7 +110,7 @@ impl EnvHolder {
             self
     }
 
-
+    /// Retrive env variables
     pub fn get_var(&self, env_name: &str) -> Option<&str> {
            let var = self.variables.get(env_name);
 
@@ -195,7 +230,7 @@ impl EnvHolder {
     }
 
   
-    pub fn read_var_from_cmd_line (&mut self) {
+    fn read_var_from_cmd_line (&mut self) {
         let mut contents = String::from("");
         for arg in env::args(){
             println!("arg{}", arg);
