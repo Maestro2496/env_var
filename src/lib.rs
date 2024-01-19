@@ -1,14 +1,16 @@
 mod tests;
 use std::fs;
+use std::path::Path;
 use std::env;
 use std::collections::HashMap;
 use std::ops::Deref;
 use serde_json::{Value, Error};
-
+use regex::Regex;
 
 pub struct EnvHolder {
     variables : HashMap<String, String>,
     debug : bool,
+    file_name: String,
 }
 
 impl EnvHolder {
@@ -17,13 +19,20 @@ impl EnvHolder {
         let mut env_holder =  Self {
             variables : HashMap::new(),
             debug,
+            file_name : String::from(""),
         };
 
         let file = EnvHolder::check_available_file();
 
         match file {
-            Some(".env") => env_holder.set_var_from_env_file(),
-            Some(".env.json") => env_holder.set_var_from_json(),
+            Some(".env") => {
+                env_holder.set_var_from_env_file(".env");
+                env_holder.file_name = String::from(".env");
+            },
+            Some(".env.json") => {
+                env_holder.set_var_from_json(".env.json");
+                env_holder.file_name = String::from(".env.json");
+            },
             _ =>  {
              let _ =  fs::write(".env", "path = '.env'").map_err(|err| {
                 if debug {
@@ -31,6 +40,7 @@ impl EnvHolder {
                 }
                 err
              });
+             env_holder.file_name = String::from(".env");
             },
         }
         // Variables from the command line take precedence
@@ -46,6 +56,30 @@ impl EnvHolder {
       self
     }
 
+
+    pub fn with_file_name(mut self, file_name: &str) -> Self{
+            
+            //Read the file and update the env var
+            let path = Path::new(file_name).extension().and_then(|ext| ext.to_str()).unwrap_or("");
+            println!("{}", path);
+            match path {
+               "txt" | "env" => {
+                    self.set_var_from_env_file(file_name)
+               },
+               "json" => {
+                    self.set_var_from_json(file_name)
+               },
+               _ => {
+                    if self.debug {
+                        panic!("Unsupported file.")
+                    }
+               }
+            }
+
+            self
+    }
+
+
     pub fn get_var(&self, env_name: &str) -> Option<&str> {
            let var = self.variables.get(env_name);
 
@@ -58,8 +92,12 @@ impl EnvHolder {
            
     }
 
-    fn set_var_from_json (&mut self) {
-        let file = fs::read_to_string(".env.json");
+    fn set_var_from_json (&mut self, file_name: &str) {
+
+
+        assert!(file_name.ends_with(".json"), "Json file required!");
+
+        let file = fs::read_to_string(file_name);
 
 
         match file {
@@ -91,9 +129,14 @@ impl EnvHolder {
         }
     }
 
-    fn set_var_from_env_file (&mut self) {
-        // Read the .env file
-        let file = fs::read_to_string(".env");
+    fn set_var_from_env_file (&mut self, file_name: &str) {
+
+        let pattern = Regex::new(r"\.(txt|env)$").unwrap();
+
+        assert!(pattern.is_match(file_name), "Invalid file extension");
+
+        // Read the .env or .txt file
+        let file = fs::read_to_string(file_name);
         
         match file {
             Ok(file) => {

@@ -2,7 +2,6 @@
 
 use super::*;
 
-
 #[test]
 fn test_check_available_file() {
     
@@ -48,7 +47,23 @@ fn test_set_var_from_json_file() {
        assert_eq!(url, None);
     }
 }
+#[test]
+fn test_init_with_file_name() {
+    fs::write("test.env", "path=test.json").ok();
 
+    let env_holder = EnvHolder::new(true).with_file_name("test.env");
+
+   
+
+    let path = env_holder.get_var("path");
+    if let Some(path_value) = path {
+        assert_eq!(path_value, "test.json");
+    }else {
+       assert_eq!(path, None);
+    }
+
+    fs::remove_file("test.env").ok();
+}
 
 // #[test]
 // fn test_read_from_cmd_line (){
