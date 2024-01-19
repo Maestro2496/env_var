@@ -1,12 +1,12 @@
 mod tests;
 use std::fs;
-use std::path::Path;
 use std::env;
 use std::collections::HashMap;
 use std::ops::Deref;
 use serde_json::{Value, Error};
 use regex::Regex;
 
+#[derive(Debug)]
 pub struct EnvHolder {
     variables : HashMap<String, String>,
     debug : bool,
@@ -59,21 +59,17 @@ impl EnvHolder {
 
     pub fn with_file_name(mut self, file_name: &str) -> Self{
             
-            //Read the file and update the env var
-            let path = Path::new(file_name).extension().and_then(|ext| ext.to_str()).unwrap_or("");
-            println!("{}", path);
-            match path {
-               "txt" | "env" => {
-                    self.set_var_from_env_file(file_name)
-               },
-               "json" => {
-                    self.set_var_from_json(file_name)
-               },
-               _ => {
-                    if self.debug {
-                        panic!("Unsupported file.")
+            if file_name.ends_with("txt") | file_name.ends_with(".env") {
+               
+                        self.set_var_from_env_file(file_name)
                     }
-               }
+
+            else if file_name.ends_with(".json"){
+                self.set_var_from_json(file_name)
+            }
+
+            else {
+                panic!("File not supported!")
             }
 
             self
@@ -110,7 +106,11 @@ impl EnvHolder {
                     match parsed_file {
                         Value::Object(json_obj) => {
                             for (key, value) in json_obj {
-                                    let value = value.to_string().trim_matches('\"').to_string();
+                                    let value = value.to_string()
+                                                            .replace("\"", "")
+                                                            .replace("'", "")
+                                                            .trim().to_string();
+                                            
                                     self.variables.insert(key, value);
                              }
                         },
@@ -147,9 +147,13 @@ impl EnvHolder {
                     } else if trimmed_line.contains("=") {
                     if let Some((key, value)) =  line.trim().split_once("="){
                             
-                            let key = key.trim_matches('\"').to_string();
-                            let value = value.trim_matches('\"').to_string();
-                            
+                            let key = key.trim_matches('\"').trim().to_string();
+                            println!("{}", value);
+                            let value = value
+                                .replace("\"", "")
+                                .replace("'", "")
+                                .trim().to_string();
+                            println!("{}", value);
                             self.variables.insert(key, value);
                     }
                     }
@@ -162,6 +166,7 @@ impl EnvHolder {
                
             }
         }
+
     }
 
     /// Checks if a .env or .env.json file is available.
@@ -189,15 +194,7 @@ impl EnvHolder {
         
     }
 
-    // fn is_valid_file_name (file_name: &str) -> bool {
-    //     let path = Path::new(file_name);
-
-    //     if let Some(file_extension) = path.extension().and_then(|ext| ext.to_str()){
-
-    //         return [".env", ".txt", ".json"].contains(&file_extension);
-    //     }
-    //     false   
-    // }
+  
     pub fn read_var_from_cmd_line (&mut self) {
         let mut contents = String::from("");
         for arg in env::args(){
